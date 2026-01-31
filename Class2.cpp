@@ -24,17 +24,17 @@ public:
 
 int main() {
 
-    //By heap
-    // Student *s1 = new Student("Harsh", 101, "K23");
+    // By heap
+    Student *s1 = new Student("Harsh", 101, "K23");
 
-    // s1->display();
-    // delete s1; //to save memory
+    s1->display();
+    delete s1; //to save memory
 
 
-    //By normal static way
-    Student s1("Harsh", 101, "K23");
+    // By normal static way
+    // Student s1("Harsh", 101, "K23");
 
-    s1.display();
-    return 0;
+    // s1.display();
+    // return 0;
 }
 
