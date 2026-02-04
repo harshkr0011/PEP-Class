@@ -1,0 +1,28 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+class Node {
+public:
+    int data;
+    Node* next;
+
+    Node(int val) {
+        data = val;
+        next = NULL;
+    }
+};
+
+
+
+// Print circular linked list
+void printList(Node* head) {
+    if (head == NULL) return;
+
+    Node* temp = head;
+    do {
+        cout << temp->data << " ";
+        temp = temp->next;
+    } while (temp != head);
+
+    cout << endl;
+}
