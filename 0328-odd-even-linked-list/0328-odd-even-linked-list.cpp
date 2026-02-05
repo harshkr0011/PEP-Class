@@ -12,14 +12,14 @@ class Solution {
 public:
     ListNode* oddEvenList(ListNode* head) {
         // Edge case: Empty list
-        if(head == nullptr) return nullptr;
+        if(head == NULL) return NULL;
         
         ListNode* odd = head;
         ListNode* even = head->next;
         ListNode* evenHead = even; // Store the start of even list
         
         // Loop while there are at least two more nodes to process
-        while(even != nullptr && even->next != nullptr){
+        while(even != NULL && even->next != NULL){
             // Link current odd to next odd
             odd->next = even->next;
             odd = odd->next;
