@@ -1,145 +1,81 @@
 class Solution {
-
-    static constexpr int ENG_ALPHA = 3;
-
-    // TC: O(n * n * ENG_ALPHA) | SC: O(ENG_ALPHA)
-    int bruteForce(int n, string& s) {
-
-        int maxi = 1;
-
-        for (int i = 0; i < n; i++) {
-            vector<int> freqs(ENG_ALPHA, 0);
-
-            for (int j = i; j < n; j++) {
-                bool flag = true;
-                int val = s[j] - 'a';
-                freqs[val]++;
-
-                for (int k = 0; k < ENG_ALPHA; k++) {
-                    if (freqs[k] > 0 && freqs[k] != freqs[val]) {
-                        flag = false;
-                        break;
-                    }
-                }
-
-                if (flag) {
-                    maxi = max(maxi, j - i + 1);
-                }
-            }
-        }
-
-        return maxi;
-    }
-
-    // len = unique cnt * max freq
-    // TC: O(n * n) | SC: O(ENG_ALPHA)
-    int better(int n, string& s) {
-
-        int maxi = 1;
-
-        for (int i = 0; i < n; i++) {
-            vector<int> freqs(ENG_ALPHA, 0);
-            int unique = 0, maxFreq = 0;
-
-            for (int j = i; j < n; j++) {
-                int val = s[j] - 'a';
-                freqs[val]++;
-                unique += freqs[val] == 1;
-                maxFreq = max(maxFreq, freqs[val]);
-
-                if (j - i + 1 == unique * maxFreq) {
-                    maxi = max(maxi, j - i + 1);
-                }
-            }
-        }
-
-        return maxi;
-    }
-
-    // TC: O(5n) | SC: O(2n)
-    int optimal(int n, string& s) {
-
-        int maxi = 1;
-
-        // 3 - character balance
-        struct pair_hash {
-            size_t operator()(const pair<int, int>& p) const {
-                return hash<int>()(p.first) ^ (hash<int>()(p.second) << 1);
-            }
-        };
-
-        int a = 0, b = 0;
-        unordered_map<pair<int, int>, int, pair_hash> mp;
-        mp[{0, 0}] = -1;
-
-        for (int i = 0; i < n; i++) {
-            if (s[i] == 'a') {
-                a++;
-            } else if (s[i] == 'b') {
-                b++;
-            } else if (s[i] == 'c') {
-                a--;
-                b--;
-            }
-
-            if (mp.count({a, b})) {
-                maxi = max(maxi, i - mp[{a, b}]);
-            } else {
-                mp[{a, b}] = i;
-            }
-        }
-
-        // 2 - character balance
-        vector<pair<char, char>> pairs = {{'a', 'b'}, {'b', 'c'}, {'a', 'c'}};
-
-        for (auto& [c1, c2] : pairs) {
-
-            int cnt = 0;
-            unordered_map<int, int> mp;
-            mp[0] = -1;
-
-            for (int i = 0; i < n; i++) {
-                if (s[i] == c1) {
-                    cnt++;
-                } else if (s[i] == c2) {
-                    cnt--;
-                } else {
-                    cnt = 0;
-                    mp.clear();
-                    mp[0] = i;
-                    continue;
-                }
-
-                if (mp.count(cnt)) {
-                    maxi = max(maxi, i - mp[cnt]);
-                } else {
-                    mp[cnt] = i;
-                }
-            }
-        }
-
-        // 1 - character balance
-        int len = 1;
-        for (int i = 1; i < n; i++) {
-            if (s[i - 1] == s[i]) {
-                len++;
-            } else {
-                len = 1;
-            }
-
-            maxi = max(maxi, len);
-        }
-
-        return maxi;
-    }
-
 public:
     int longestBalanced(string s) {
+        int results[7] = {
+            solve1(s, 'a'),
+            solve1(s, 'b'),
+            solve1(s, 'c'),
+            solve2(s, 'a', 'b'),
+            solve2(s, 'a', 'c'),
+            solve2(s, 'b', 'c'),
+            solve3(s)
+        };
+        int ans = 0;
+        for (int v : results) ans = max(ans, v);
+        return ans;
+    }
 
-        int n = s.size();
+private:
+    int solve1(const string& s, char t) {
+        int result = 0;
+        int count = 0;
+        for (char c : s) {
+            if (c == t) {
+                count++;
+                result = max(result, count);
+            } else {
+                count = 0;
+            }
+        }
+        return result;
+    }
 
-        // return bruteForce(n, s); // TLE
-        // return better(n, s); // TLE
-        return optimal(n, s);
+    int solve2(const string& s, char t1, char t2) {
+        int result = 0;
+        int counts[2] = {0, 0};
+        unordered_map<int, int> previousPositions;
+        for (int i = 0; i < (int)s.size(); i++) {
+            char c = s[i];
+            if (c != t1 && c != t2) {
+                previousPositions.clear();
+                counts[0] = 0;
+                counts[1] = 0;
+            } else {
+                if (c == t1) counts[0]++; else counts[1]++;
+                if (counts[0] == counts[1]) {
+                    result = max(result, counts[0] * 2);
+                } else {
+                    int diff = counts[0] - counts[1];
+                    auto it = previousPositions.find(diff);
+                    if (it != previousPositions.end()) {
+                        result = max(result, i - it->second);
+                    } else {
+                        previousPositions[diff] = i;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    int solve3(const string& s) {
+        int result = 0;
+        int counts[3] = {0, 0, 0};
+        unordered_map<long long, int> previousPositions;
+        for (int i = 0; i < (int)s.size(); i++) {
+            counts[s[i] - 'a']++;
+            if (counts[0] == counts[1] && counts[1] == counts[2]) {
+                result = i + 1;
+            } else {
+                long long diff = (long long)(counts[0] - counts[1]) * 100001LL + (long long)(counts[1] - counts[2]);
+                auto it = previousPositions.find(diff);
+                if (it != previousPositions.end()) {
+                    result = max(result, i - it->second);
+                } else {
+                    previousPositions[diff] = i;
+                }
+            }
+        }
+        return result;
     }
 };
