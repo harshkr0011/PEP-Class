@@ -3,7 +3,7 @@ public:
     bool balanced = true;
 
     int dfs(TreeNode* node) {
-        if (node == nullptr)
+        if (node == NULL)
             return 0;
 
         int l = dfs(node->left);
